@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/usr/bin/bash -l
 
 temp_path=$(pwd)
 export PATH=$PATH:$temp_path

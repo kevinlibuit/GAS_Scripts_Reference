@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/usr/bin/bash -l
 
 . /usr/share/Modules/init/bash
 module load Python/2.7

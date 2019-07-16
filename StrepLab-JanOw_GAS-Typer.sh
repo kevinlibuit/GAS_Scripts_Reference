@@ -3,7 +3,6 @@
 temp_path=$(pwd)
 export PATH=$PATH:$temp_path
 
-
 ###Load Modules###
 #. /usr/share/Modules/init/bash
 module load perl/5.22.1
@@ -25,7 +24,6 @@ r2=$3
 out_dir=$4
 allDB_dir=/foushee/GAS_Reference_DB
 
-
 ###Pre-Process Paired-end Reads###
 mkdir -p $out_dir/cut_adapt_output/$sample_name
 r1_trimd=cutadapt_${sample_name}_R1.fastq.gz
@@ -36,7 +34,7 @@ rm ${out_dir}/cut_adapt_output/${sample_name}/temp1.fastq.gz
 rm ${out_dir}/cut_adapt_output/${sample_name}/temp2.fastq.gz
 
 ###Call MLST###
-srst2 --samtools_args "\-A" --mlst_delimiter '_' --input_pe "${out_dir}/cut_adapt_output/${sample_name}/$r1_trimd" "${out_dir}/cut_adapt_output/${sample_name}/$r2_trimd" --output "${out_dir}/GAS_output/${sample_name}/${sanple_name}_MLST" --save_scores --mlst_db "$allDB_dir/Streptococcus_pyogenes.fasta" --mlst_definitions "$allDB_dir/spyogenes.txt" --min_coverage 99.999
+export SRST2_SAMTOOLS="/usr/local/bin/samtools-0.1.18/samtools" && srst2 --samtools_args "\-A" --mlst_delimiter '_' --input_pe "${out_dir}/cut_adapt_output/${sample_name}/$r1_trimd" "${out_dir}/cut_adapt_output/${sample_name}/$r2_trimd" --forward "_R1" --reverse "_R2" --output "${out_dir}/GAS_output/${sample_name}/${sanple_name}_MLST" --save_scores --mlst_db "$allDB_dir/Streptococcus_pyogenes.fasta" --mlst_definitions "$allDB_dir/spyogenes.txt" --min_coverage 99.999
 ###Check and extract new MLST alleles###
 #MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pyogenes__results.txt "$out_nameMLST"__*.Streptococcus_pyogenes.sorted.bam "$allDB_dir/Streptococcus_pyogenes.fasta"
 

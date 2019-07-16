@@ -22,7 +22,7 @@ sample_name=$1
 r1=$2
 r2=$3
 out_dir=$4
-allDB_dir=/foushee/GAS_Reference_DB
+allDB_dir=/GAS_Scripts_Reference/GAS_Reference_DB
 
 ###Pre-Process Paired-end Reads###
 mkdir -p $out_dir/cut_adapt_output/$sample_name
@@ -36,7 +36,7 @@ rm ${out_dir}/cut_adapt_output/${sample_name}/temp2.fastq.gz
 ###Call MLST###
 export SRST2_SAMTOOLS="/usr/local/bin/samtools-0.1.18/samtools" && srst2 --samtools_args "\-A" --mlst_delimiter '_' --input_pe "${out_dir}/cut_adapt_output/${sample_name}/$r1_trimd" "${out_dir}/cut_adapt_output/${sample_name}/$r2_trimd" --forward "_R1" --reverse "_R2" --output "${out_dir}/GAS_output/${sample_name}/${sanple_name}_MLST" --save_scores --mlst_db "$allDB_dir/Streptococcus_pyogenes.fasta" --mlst_definitions "$allDB_dir/spyogenes.txt" --min_coverage 99.999
 ###Check and extract new MLST alleles###
-#MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pyogenes__results.txt "$out_nameMLST"__*.Streptococcus_pyogenes.sorted.bam "$allDB_dir/Streptococcus_pyogenes.fasta"
+MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pyogenes__results.txt "$out_nameMLST"__*.Streptococcus_pyogenes.sorted.bam "$allDB_dir/Streptococcus_pyogenes.fasta"
 
 ###Call emm Type###
 #module unload perl/5.22.1
@@ -47,11 +47,11 @@ export SRST2_SAMTOOLS="/usr/local/bin/samtools-0.1.18/samtools" && srst2 --samto
 #module load perl/5.22.1
 
 ###Call GAS Misc Resistance###
-#GAS_Res_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -d "$allDB_dir" -r GAS_Res_Gene-DB_Final.fasta -n "$just_name"
+#GAS_Res_Typer.pl -1 ${out_dir}/cut_adapt_output/${sample_name}/$r1_trimd" -2 ${out_dir}/cut_adapt_output/${sample_name}/$r2_trimd" -d "$allDB_dir" -r GAS_Res_Gene-DB_Final.fasta -n "$sample_name"
 #GAS_Target2MIC.pl TEMP_Res_Results.txt "$just_name" TEMP_pbpID_Results.txt
 
 ###Type Surface and Secretory Proteins###
-#GAS_Features_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -d "$allDB_dir" -f GAS_features_Gene-DB_Final.fasta -n "$just_name"
+GAS_Features_Typer.pl -1 "${out_dir}/cut_adapt_output/${sample_name}/$r1_trimd" -2 "${out_dir}/cut_adapt_output/${sample_name}/$r2_trimd" -d "$allDB_dir" -f GAS_features_Gene-DB_Final.fasta -n "$sample_name" -o "${out_dir}/GAS_output/${sample_name}"
 
 
 ###Output the emm type/MLST/drug resistance data for this sample to it's results output file###

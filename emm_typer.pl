@@ -111,44 +111,30 @@ my ($help, $fastq1, $fastq2, $emm_DB, $outDir, $outName) = checkOptions( @ARGV )
 
 
 ##Start Doing Stuff##
-chdir "$outDir";
 my $emmType_output = "emm-Type_Results.txt";
 open(my $fh,'>',$emmType_output) or die "Could not open file '$emmType_output' $!";
 print $fh "Sample_Name\temm_Type\temm_Seq\tPercent_Identity\tMatch_Length\n";
 
-###Preprocess with Cutadapt###
-my $fastq1_trimd = "cutadapt_".$outName."_S1_L001_R1_001.fastq";
-my $fastq2_trimd = "cutadapt_".$outName."_S1_L001_R2_001.fastq";
-if( -e $fastq1_trimd) {
-    print "Fastq files have already been preprocessed\n";
+if( -e "./shovill_output/$outName/contigs.fa") {
+    print "Shovill assembly has already been completed\n";
 } else {
-    print "Beginning cutadapt\n";
-    system("cutadapt -b AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -q 20 --minimum-length 50 --paired-output temp2.fastq -o temp1.fastq $fastq1 $fastq2");
-    system("cutadapt -b AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT -q 20 --minimum-length 50 --paired-output $fastq1_trimd -o $fastq2_trimd temp2.fastq temp1.fastq");
-    #`cutadapt -b AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -q 20 --minimum-length 50 --paired-output temp2.fastq -o temp1.fastq $fastq1 $fastq2`;
-    #`cutadapt -b AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT -q 20 --minimum-length 50 --paired-output $fastq1_trimd -o $fastq2_trimd temp2.fastq temp1.fastq`;
-    #system("cutadapt --version > cut_temp.txt")
-    #system("cutadapt -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT -q 20 --minimum-length 50 -o $fastq1_trimd -p $fastq2_trimd $fastq1 $fastq2");
-    my $tempDel_1 = "temp1.fastq";
-    my $tempDel_2 = "temp2.fastq";
-    unlink $tempDel_1;
-    unlink $tempDel_2;
-}
-
-if( -d "./velvet_output") {
-    print "Velvet assembly has already been completed\n";
-} else {
-    print "Beginning Velvet\n";
-    my $velvetK_val = `velvetk.pl --best --size 1.8M "$fastq1_trimd" "$fastq2_trimd"`;
-    `VelvetOptimiser.pl -s "$velvetK_val" -e "$velvetK_val" -o "-scaffolding no" -f "-shortPaired -separate -fastq $fastq1_trimd $fastq2_trimd" -d velvet_output`;
+    print "Beginning Shovill assembly\n";
+    my $mem=q(awk '/MemFree/ { printf "%.3f \n", $2/1024/1024 }' /proc/meminfo);
+    $mem=quotemeta($mem);
+    $mem=int(`$mem`);
+    print "MEM variable: $mem";
+    my $cpu=`nproc`;
+    print "CPU variable: $cpu";
+    my $shovill_command="shovill --outdir $outDir/shovill_output/$outName -R1 $fastq1 -R2 $fastq2 --ram $mem --cpu $cpu";
+    system($shovill_command); 
 }
 
 print "Blast assembled contigs against the forward primer reference sequence\n";
 if (glob("$emm_DB/blast_frwd_primr-nucl_DB*")) {
-    system("blastn -db $emm_DB/blast_frwd_primr-nucl_DB -query ./velvet_output/contigs.fa -outfmt 6 -word_size 4 -out contig-vs-frwd_nucl.txt");
+    system("blastn -db $emm_DB/blast_frwd_primr-nucl_DB -query ./shovill_output/$outName/contigs.fa -outfmt 6 -word_size 4 -out contig-vs-frwd_nucl.txt");
 } else {
     system("makeblastdb -in $emm_DB/frwd_primr-DB_Final.fasta -dbtype nucl -out $emm_DB/blast_frwd_primr-nucl_DB");
-    system("blastn -db $emm_DB/blast_frwd_primr-nucl_DB -query ./velvet_output/contigs.fa -outfmt 6 -word_size 4 -out contig-vs-frwd_nucl.txt");
+    system("blastn -db $emm_DB/blast_frwd_primr-nucl_DB -query ./shovill_output/$outName/contigs.fa -outfmt 6 -word_size 4 -out contig-vs-frwd_nucl.txt");
 }
 
 ###Get the best blast hit by sorting the blast output by bit score, then % ID, then alignment length and select the first hit as the best match.###
@@ -174,7 +160,7 @@ if ($best_frwd_len == 19 && $best_frwd_iden >= 94.5) {
 	print $fh "$best_frwd_name\t$query_strt\t$query_extract\n";
 	close $fh;
 	#print "done\n";
-	system("bedtools getfasta -fi ./velvet_output/contigs.fa -bed emm_region_extract.bed -fo emm_region_extract.fasta");
+	system("bedtools getfasta -fi ./shovill_output/$outName/contigs.fa -bed emm_region_extract.bed -fo emm_region_extract.fasta");
     } else {
 	print "extract from reverse strand\n";
 	##Extract the -500 sequence with Bedtools##
@@ -183,7 +169,7 @@ if ($best_frwd_len == 19 && $best_frwd_iden >= 94.5) {
         print $fh "$best_frwd_name\t$query_extract\t$query_strt\n";
         close $fh;
 	
-	my $extract_emm1 = `bedtools getfasta -tab -fi ./velvet_output/contigs.fa -bed emm_region_extract.bed -fo stdout`;
+	my $extract_emm1 = `bedtools getfasta -tab -fi ./shovill_output/$outName/contigs.fa -bed emm_region_extract.bed -fo stdout`;
         print "extract emm is:\n$extract_emm1\n";
 	my @emm1_array = split('\t',$extract_emm1);
 	my $rev_comp_emm1 = reverse($emm1_array[1]);

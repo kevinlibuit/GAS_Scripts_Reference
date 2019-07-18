@@ -5,6 +5,7 @@ export PATH=$PATH:$temp_path
 
 ###Load Modules###
 #. /usr/share/Modules/init/bash
+source 
 module load perl/5.22.1
 module load ncbi-blast+/2.2.29
 module load BEDTools/2.17.0
@@ -39,9 +40,9 @@ export SRST2_SAMTOOLS="/usr/local/bin/samtools-0.1.18/samtools" && srst2 --samto
 MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pyogenes__results.txt "$out_nameMLST"__*.Streptococcus_pyogenes.sorted.bam "$allDB_dir/Streptococcus_pyogenes.fasta"
 
 ###Call emm Type###
-#module unload perl/5.22.1
-#module load perl/5.16.1-MT
-#emm_typer.pl -1 "$readPair_1" -2 "$readPair_1" -r "$allDB_dir" -n "$just_name"
+module unload perl/5.22.1
+module load perl/5.16.1-MT
+emm_typer.pl -1 "${out_dir}/cut_adapt_output/${sample_name}/$r1_trimd" -2 "${out_dir}/cut_adapt_output/${sample_name}/$r2_trimd" -r "$allDB_dir" -n "$sample_name" -o "${out_dir}"
 #PBP-Gene_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/GAS_bLactam_Ref.fasta" -n "$just_name" -s GAS -p 2X
 #module unload perl/5.16.1-MT
 #module load perl/5.22.1
@@ -51,7 +52,7 @@ MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pyogenes__results.txt
 #GAS_Target2MIC.pl TEMP_Res_Results.txt "$just_name" TEMP_pbpID_Results.txt
 
 ###Type Surface and Secretory Proteins###
-GAS_Features_Typer.pl -1 "${out_dir}/cut_adapt_output/${sample_name}/$r1_trimd" -2 "${out_dir}/cut_adapt_output/${sample_name}/$r2_trimd" -d "$allDB_dir" -f GAS_features_Gene-DB_Final.fasta -n "$sample_name" -o "${out_dir}/GAS_output/${sample_name}"
+#GAS_Features_Typer.pl -1 "${out_dir}/cut_adapt_output/${sample_name}/$r1_trimd" -2 "${out_dir}/cut_adapt_output/${sample_name}/$r2_trimd" -d "$allDB_dir" -f GAS_features_Gene-DB_Final.fasta -n "$sample_name" -o "${out_dir}/GAS_output/${sample_name}"
 
 
 ###Output the emm type/MLST/drug resistance data for this sample to it's results output file###

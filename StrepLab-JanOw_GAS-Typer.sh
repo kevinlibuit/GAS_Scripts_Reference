@@ -4,8 +4,7 @@ temp_path=$(pwd)
 export PATH=$PATH:$temp_path
 
 ###Load Modules###
-#. /usr/share/Modules/init/bash
-source 
+source /usr/share/modules/init/bash 
 module load perl/5.22.1
 module load ncbi-blast+/2.2.29
 module load BEDTools/2.17.0

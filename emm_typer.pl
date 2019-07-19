@@ -120,7 +120,6 @@ if( -e "./shovill_output/$outName/contigs.fa") {
 } else {
     print "Beginning Shovill assembly\n";
     my $mem=q(awk '/MemFree/ { printf "%.3f \n", $2/1024/1024 }' /proc/meminfo);
-    $mem=quotemeta($mem);
     $mem=int(`$mem`);
     print "MEM variable: $mem";
     my $cpu=`nproc`;

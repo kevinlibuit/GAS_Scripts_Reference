@@ -310,11 +310,16 @@ my @Bin_Res_arr = (0) x 20;
 my $outNameRES = "RES_".$outName;
 my $out_nameARG = "ARG_".$outName;
 my $out_nameRESFI = "RESFI_".$outName;
-system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --output $outNameRES --log --save_scores --min_coverage 99.9 --max_divergence 5 --gene_db $res_DB");
+#my $samtools_export=q("export SRST2_SAMTOOLS=/usr/local/bin/samtools-0.1.18/samtools");
+#$samtools_export = quotemeta($samtools_export);
+#system($samtools_export);
+$ENV{'SRST2_SAMTOOLS'}="/samtools/samtools-0.1.18/samtools";
+print $ENV{'SRST2_SAMTOOLS'};
+system("echo \$SRST2_SAMTOOLS && srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --forward _R1 --reverse _R2 --output $outNameRES --log --save_scores --min_coverage 99.9 --max_divergence 5 --gene_db $res_DB");
 ###Type ARG-ANNOT Resistance Genes###
-system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --output $out_nameARG --log --save_scores --min_coverage 70 --max_divergence 30 --gene_db $ref_dir/ARGannot_r1.fasta");
+system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --forward _R1 --reverse _R2 --output $out_nameARG --log --save_scores --min_coverage 70 --max_divergence 30 --gene_db $ref_dir/ARGannot_r1.fasta");
 ###Type ResFinder Resistance Gene###
-system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --output $out_nameRESFI --log --save_scores --min_coverage 70 --max_divergence 30 --gene_db $ref_dir/ResFinder.fasta");
+system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --forward _R1 --reverse _R2 --output $out_nameRESFI --log --save_scores --min_coverage 70 --max_divergence 30 --gene_db $ref_dir/ResFinder.fasta");
 #=cut
 
 my @TEMP_RES_bam = glob("RES_*\.sorted\.bam");
